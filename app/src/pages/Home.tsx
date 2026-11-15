@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <div className="min-h-dvh">
       <header className="border-b bg-card/60 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-5 flex items-center gap-3">
+        <div className="mx-auto max-w-7xl px-4 py-5 flex flex-wrap items-center gap-x-3 gap-y-2">
           <img
             src="icon.webp"
             alt="TinyWhoop PID Lab"

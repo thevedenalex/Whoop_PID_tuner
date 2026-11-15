@@ -99,14 +99,14 @@ export default function ResultsPanel(props: {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="pid">
-          <TabsList className="mb-4 flex-wrap">
+          <TabsList className="mb-4 grid h-auto w-full grid-cols-2 gap-[3px] sm:inline-flex sm:h-9 sm:w-fit">
             <TabsTrigger value="pid">PID-таблица</TabsTrigger>
             <TabsTrigger value="analysis">Анализ лога</TabsTrigger>
             <TabsTrigger value="charts" disabled={!hasLog}>
               Графики лога
             </TabsTrigger>
             <TabsTrigger value="cli">CLI diff</TabsTrigger>
-            <TabsTrigger value="why">Почему так</TabsTrigger>
+            <TabsTrigger value="why">Рекомендации</TabsTrigger>
           </TabsList>
 
           {/* ---------------- PID table ---------------- */}
