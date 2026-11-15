@@ -136,19 +136,18 @@ export default function Home() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
-        {log && loaded && (
-          <LogInfoBar
-            log={log}
-            fileName={loaded.fileName}
-            sizes={loaded.sizes}
-            switching={switching}
-            error={logError}
-            onSelectLog={(i) => void handleSelectLog(i)}
-          />
-        )}
+        <LogDrop onLoaded={handleLoaded} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <LogDrop onLoaded={handleLoaded} />
+        <LogInfoBar
+          log={log}
+          fileName={loaded?.fileName ?? null}
+          sizes={loaded?.sizes ?? null}
+          switching={switching}
+          error={logError}
+          onSelectLog={(i) => void handleSelectLog(i)}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <RatesPanel rates={rates} onChange={setRates} fromLog={fromLog} profile={profile} onProfile={setProfile} />
           <BuildPanel build={build} onChange={setBuild} />
         </div>
