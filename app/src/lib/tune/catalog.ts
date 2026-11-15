@@ -102,7 +102,6 @@ export const CATEGORIES: CategoryDef[] = [
       { id: 'p31_gemfan1219s', name: 'Gemfan 1219S-3 (31мм, 3 лопасти)', weight: 1.0, blades: 3, note: 'поликарбонат, прочные' },
       { id: 'p31_gemfan1220', name: 'Gemfan 1220 (31мм, 2 лопасти)', weight: 0.9, blades: 2 },
       { id: 'p31_gemfan1220_4', name: 'Gemfan 1220-4 (31мм, 4 лопасти)', weight: 1.1, blades: 4, aggr: 'aggressive', note: 'много тяги' },
-      { id: 'p31_hq', name: 'HQProp T65MM / 31MMX3 (31мм)', weight: 1.0, blades: 3 },
       { id: 'p31_hq_1212', name: 'HQProp 1.2×1.2 (31мм, 2 лопасти)', weight: 0.9, blades: 2 },
       { id: 'p31_hq_1234', name: 'HQProp 1.2×1.3×4 (31мм, 4 лопасти)', weight: 1.1, blades: 4, aggr: 'aggressive', note: 'кусачие' },
       { id: 'p31_hq_ul', name: 'HQProp Ultralight 1.2×1×3 (31мм)', weight: 0.8, blades: 3, aggr: 'light', note: 'ультралёгкие' },
