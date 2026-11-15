@@ -1,4 +1,4 @@
-# TinyWhoop PID Lab
+# TinyWhoop PID Tuner
 
 **Онлайн: https://pidtune.veden.pro/** — работает прямо в браузере,
 ничего не отправляет на сервер.
