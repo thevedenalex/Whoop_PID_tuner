@@ -267,7 +267,7 @@ export default function ResultsPanel(props: {
                           />
                           <Legend wrapperStyle={{ fontSize: 12 }} />
                           <ReferenceLine x={0} stroke="hsl(210 18% 25%)" />
-                          <Line type="stepAfter" dataKey="Сетпоинт" stroke="hsl(187 92% 45%)" dot={false} strokeWidth={2} isAnimationActive={false} />
+                          <Line type="stepAfter" dataKey="Сетпоинт" stroke="hsl(270 90% 66%)" dot={false} strokeWidth={2} isAnimationActive={false} />
                           <Line type="monotone" dataKey="Гироскоп" stroke="hsl(45 90% 55%)" dot={false} strokeWidth={1.5} isAnimationActive={false} />
                         </LineChart>
                       </ResponsiveContainer>

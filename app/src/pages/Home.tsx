@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Rocket } from 'lucide-react'
 import LogDrop, { type LoadedLog } from '@/components/LogDrop'
 import LogInfoBar from '@/components/LogInfoBar'
 import RatesPanel, { clampAxisRates, DEFAULT_RATES, type AxisRates, type RatesState } from '@/components/RatesPanel'
@@ -108,9 +107,11 @@ export default function Home() {
     <div className="min-h-dvh">
       <header className="border-b bg-card/60 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-primary/15 border border-primary/30 flex items-center justify-center">
-            <Rocket className="w-5 h-5 text-primary" />
-          </div>
+          <img
+            src="icon.webp"
+            alt="TinyWhoop PID Lab"
+            className="shrink-0 w-10 h-10 rounded-xl border border-primary/30 shadow-[0_0_18px_hsl(270_90%_66%/0.35)]"
+          />
           <div>
             <h1 className="font-display text-xl font-bold tracking-wide">
               TinyWhoop PID Lab

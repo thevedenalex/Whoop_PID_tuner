@@ -18,7 +18,7 @@ import type { ParsedLog, NumArr } from '@/lib/bbl/types'
 import type { LogMetrics } from '@/lib/analyze/metrics'
 import { Button } from '@/components/ui/button'
 
-const AXIS_COLORS = ['hsl(187 92% 45%)', 'hsl(45 90% 55%)', 'hsl(280 70% 62%)']
+const AXIS_COLORS = ['hsl(270 90% 66%)', 'hsl(45 90% 55%)', 'hsl(210 80% 62%)']
 const AXIS_NAMES = ['roll', 'pitch', 'yaw']
 const MOTOR_COLORS = ['hsl(140 70% 50%)', 'hsl(200 85% 55%)', 'hsl(25 90% 55%)', 'hsl(330 75% 60%)']
 const GRID = 'hsl(210 18% 14%)'
