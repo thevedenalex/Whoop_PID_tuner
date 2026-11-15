@@ -300,11 +300,6 @@ export function computeTune(input: TuneInput): TuneResult {
     other.feedforward_transition = 0
     other.iterm_relax_cutoff = 12
     addExpl('iterm_relax_cutoff', '10', '12', 'Высокие рейты (≥800°/с): быстрые движения — ускоряем расслабление I-term, чтобы не было отскока')
-  } else if (rpMax <= 600) {
-    warn.push('Для гонок рейты roll/pitch обычно 700–900°/с — текущие низкие, дрон будет вялым на стиках')
-  }
-  if (input.rates.yaw <= 500) {
-    warn.push('Yaw ≤ 500°/с — для гонок обычно 550–800°/с')
   }
 
   // ---------- log-based corrections ----------

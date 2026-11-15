@@ -135,10 +135,9 @@ export default function RatesPanel(props: {
             </div>
           )
         })}
-        <p className="text-xs text-muted-foreground">
-          Гоночный ориентир (Actual): центр 200–360°/с, макс 700–900°/с, экспо 10–25%.
-          {props.fromLog ? ' Значения предзаполнены из лога.' : ''}
-        </p>
+        {props.fromLog && (
+          <p className="text-xs text-muted-foreground">Значения предзаполнены из лога.</p>
+        )}
       </CardContent>
     </Card>
   )
