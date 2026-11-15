@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import LogDrop, { type LoadedLog } from '@/components/LogDrop'
-import LogInfoBar from '@/components/LogInfoBar'
+import LogSection, { type LoadedLog } from '@/components/LogSection'
 import RatesPanel, { clampAxisRates, DEFAULT_RATES, type AxisRates, type RatesState } from '@/components/RatesPanel'
 import SettingsIO from '@/components/SettingsIO'
 import BuildPanel, { computeBuild } from '@/components/BuildPanel'
@@ -136,9 +135,8 @@ export default function Home() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
-        <LogDrop onLoaded={handleLoaded} />
-
-        <LogInfoBar
+        <LogSection
+          onLoaded={handleLoaded}
           log={log}
           fileName={loaded?.fileName ?? null}
           sizes={loaded?.sizes ?? null}
