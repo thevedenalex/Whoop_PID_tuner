@@ -53,11 +53,10 @@ export const CATEGORIES: CategoryDef[] = [
       { id: 'f75_air75', name: 'BetaFPV Air75', weight: 4.0, cls: '75' },
       { id: 'f75_meteor75', name: 'BetaFPV Meteor75 Pro', weight: 4.4, cls: '75' },
       { id: 'f75_mobula7', name: 'Happymodel Mobula7 (75мм)', weight: 4.6, cls: '75' },
-      { id: 'f75_liteaf75', name: 'LiteAF 75', weight: 3.4, cls: '75', note: 'лёгкая canopy-рама' },
-      { id: 'f75_liteaf75_cb', name: 'LiteAF 75 + карбоновый усилитель', weight: 4.0, cls: '75', note: 'жёстче, для гонок' },
       { id: 'f75_cockroach75', name: 'NBD Cockroach 75', weight: 3.9, cls: '75' },
       { id: 'f75_cockroach75_cb', name: 'NBD Cockroach 75 + карбоновый усилитель', weight: 4.6, cls: '75', note: 'жёстче, для гонок' },
-      { id: 'f75_cockroach_liteaf', name: 'NBD Cockroach 75 LiteAF', weight: 4.5, cls: '75', note: 'гоночная' },
+      { id: 'f75_cockroach_liteaf', name: 'NBD Cockroach LiteAF 75', weight: 3.2, cls: '75', note: 'лёгкая версия' },
+      { id: 'f75_cockroach_liteaf_cb', name: 'NBD Cockroach LiteAF 75 + карбоновый усилитель', weight: 3.9, cls: '75', note: 'жёстче, для гонок' },
     ],
   },
   {

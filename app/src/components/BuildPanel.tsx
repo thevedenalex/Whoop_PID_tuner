@@ -119,7 +119,7 @@ export default function BuildPanel(props: {
   // группировка позиций: рамы — по размеру, моторы — по типоразмеру,
   // пропы — по размеру, остальные — по питанию.
   // Внутри группы — сортировка по производителю (алфавит), безымянные (generic) — в конец.
-  const BRAND_RE = /^(BetaFPV|Happymodel|LiteAF|NBD|RCinPower|VCI|Gemfan|HQProp|RunCam|Caddx|Foxeer|HDZero|ELRS|TBS|Tattu|Dogcom)\b/
+  const BRAND_RE = /^(BetaFPV|Happymodel|NBD|RCinPower|VCI|Gemfan|HQProp|RunCam|Caddx|Foxeer|HDZero|ELRS|TBS|Tattu|Dogcom)\b/
   const brandOf = (x: Component) => x.name.match(BRAND_RE)?.[1] ?? null
   const byName = (a: Component, b: Component) => {
     const ba = brandOf(a)
