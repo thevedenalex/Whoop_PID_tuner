@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Copy, CheckCircle2, AlertTriangle, Activity, TerminalSquare, Info } from 'lucide-react'
+import { Copy, CheckCircle2, AlertTriangle, Activity, TerminalSquare, Info, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -55,6 +55,37 @@ export default function ResultsPanel(props: {
   const { tune, metrics, hasLog, log, logSettings } = props
   const [copied, setCopied] = useState(false)
   const [chartAxis, setChartAxis] = useState(0)
+  // ручные правки PID (ключ 'p_roll' и т.д., строка); null — правок нет
+  const [pidDraft, setPidDraft] = useState(null as { [key: string]: string } | null)
+
+  type Ax = 'roll' | 'pitch' | 'yaw'
+  type Lt = 'p' | 'i' | 'd'
+  const pidVal = (ax: Ax, l: Lt): number => {
+    if (pidDraft) {
+      const v = parseInt(pidDraft[l + '_' + ax] ?? '', 10)
+      if (!isNaN(v)) return Math.max(0, Math.min(250, v))
+    }
+    return tune.pid[ax][l]
+  }
+  const pidText = (ax: Ax, l: Lt): string =>
+    pidDraft && l + '_' + ax in pidDraft ? pidDraft[l + '_' + ax] : String(tune.pid[ax][l])
+  const setCell = (ax: Ax, l: Lt, txt: string) => {
+    setPidDraft({ ...(pidDraft ?? {}), [l + '_' + ax]: txt.replace(/[^\d]/g, '').slice(0, 3) })
+  }
+  const pidDirty = pidDraft !== null && Object.values(pidDraft).some((v) => v !== '')
+
+  // CLI с учётом ручных правок PID: заменяем/добавляем set-строки
+  const cliLines = useMemo(() => {
+    if (!pidDirty) return tune.cli
+    const keys = AXIS.flatMap((ax) => (['p', 'i', 'd'] as const).map((l) => `${l}_${ax}`))
+    const lines = tune.cli.filter((l) => !keys.some((k) => l.startsWith('set ' + k + ' =')))
+    const add = AXIS.flatMap((ax) =>
+      (['p', 'i', 'd'] as const).map((l) => `set ${l}_${ax} = ${pidVal(ax as Ax, l)}`)
+    )
+    const saveIdx = lines.indexOf('save')
+    return saveIdx >= 0 ? [...lines.slice(0, saveIdx), ...add, ...lines.slice(saveIdx)] : [...lines, ...add]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pidDraft, pidDirty, tune])
 
   const chartData = useMemo(() => {
     if (!metrics) return []
@@ -64,7 +95,7 @@ export default function ResultsPanel(props: {
   }, [metrics, chartAxis])
 
   const copyCli = () => {
-    void navigator.clipboard.writeText(tune.cli.join('\n')).then(() => {
+    void navigator.clipboard.writeText(cliLines.join('\n')).then(() => {
       setCopied(true)
       toast.success('CLI-команды скопированы — вставьте в Betaflight Configurator → CLI')
       setTimeout(() => setCopied(false), 2000)
@@ -111,6 +142,22 @@ export default function ResultsPanel(props: {
 
           {/* ---------------- PID table ---------------- */}
           <TabsContent value="pid" className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs text-muted-foreground">
+                Значения можно править вручную — изменения попадут в CLI diff.
+              </p>
+              {pidDirty && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 ml-auto"
+                  onClick={() => setPidDraft(null)}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Сбросить к рекомендованным
+                </Button>
+              )}
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -124,15 +171,20 @@ export default function ResultsPanel(props: {
                 {AXIS.map((ax) => (
                   <TableRow key={ax}>
                     <TableCell className="capitalize font-medium">{ax}</TableCell>
-                    <TableCell className="text-right font-mono-data text-base">
-                      {tune.pid[ax].p}
-                    </TableCell>
-                    <TableCell className="text-right font-mono-data text-base">
-                      {tune.pid[ax].i}
-                    </TableCell>
-                    <TableCell className="text-right font-mono-data text-base">
-                      {tune.pid[ax].d}
-                    </TableCell>
+                    {(['p', 'i', 'd'] as const).map((l) => (
+                      <TableCell key={l} className="text-right">
+                        <input
+                          className={`w-16 bg-transparent border rounded px-1.5 py-0.5 text-right font-mono-data text-base focus:outline-none focus:border-primary ${
+                            pidDirty && l + '_' + ax in (pidDraft ?? {})
+                              ? 'border-amber-500/60 text-amber-300'
+                              : 'border-border'
+                          }`}
+                          inputMode="numeric"
+                          value={pidText(ax as Ax, l)}
+                          onChange={(e) => setCell(ax as Ax, l, e.target.value)}
+                        />
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>
@@ -310,7 +362,7 @@ export default function ResultsPanel(props: {
               </Button>
             </div>
             <pre className="scroll-slim overflow-auto rounded-md bg-black/50 border p-4 text-xs font-mono-data leading-relaxed max-h-96">
-              {tune.cli.join('\n')}
+              {cliLines.join('\n')}
             </pre>
           </TabsContent>
 
