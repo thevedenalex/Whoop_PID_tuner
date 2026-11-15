@@ -109,12 +109,12 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-5 flex flex-wrap items-center gap-x-3 gap-y-2">
           <img
             src="icon.webp"
-            alt="TinyWhoop PID Lab"
+            alt="TinyWhoop PID Tuner"
             className="shrink-0 w-10 h-10 rounded-xl border border-primary/30 shadow-[0_0_18px_hsl(270_90%_66%/0.35)]"
           />
           <div>
             <h1 className="font-display text-xl font-bold tracking-wide">
-              TinyWhoop PID Lab
+              TinyWhoop PID Tuner
             </h1>
             <p className="text-xs text-muted-foreground">
               Анализ Blackbox-логов и гоночный тюн PID для 65–75 мм вупов · Betaflight 4.4–4.5
