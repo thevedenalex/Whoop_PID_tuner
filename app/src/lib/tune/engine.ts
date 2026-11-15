@@ -197,6 +197,16 @@ export function computeTune(input: TuneInput): TuneResult {
       }
     : { ...baseTune.filters }
   const other = { ...baseTune.other }
+  if (sLog) {
+    // «Прочее» тоже стартует от значений лога (для ключей, которые там есть)
+    const o = sLog.other
+    if (o['tpa_rate'] !== undefined) other.tpa_rate = o['tpa_rate']
+    if (o['tpa_breakpoint'] !== undefined) other.tpa_breakpoint = o['tpa_breakpoint']
+    if (o['iterm_relax_cutoff'] !== undefined) other.iterm_relax_cutoff = o['iterm_relax_cutoff']
+    if (o['antigravity_gain'] !== undefined) other.anti_gravity_gain = o['antigravity_gain']
+    if (o['feedforward_boost'] !== undefined) other.feedforward_boost = o['feedforward_boost']
+    if (o['motor_output_limit'] !== undefined) other.motor_output_limit = o['motor_output_limit']
+  }
   const expl: Explanation[] = []
   const warn: string[] = []
 
@@ -516,20 +526,47 @@ export function computeTune(input: TuneInput): TuneResult {
   }
 
   // ---------- CLI ----------
+  // При загруженном логе выводим только отличия от настроек, на которых он записан
+  const logVal = (k: string): number | null => {
+    if (!sLog) return null
+    const pidMap: { [key: string]: number } = {
+      p_roll: sLog.pid.roll.p, i_roll: sLog.pid.roll.i, d_roll: sLog.pid.roll.d,
+      p_pitch: sLog.pid.pitch.p, i_pitch: sLog.pid.pitch.i, d_pitch: sLog.pid.pitch.d,
+      p_yaw: sLog.pid.yaw.p, i_yaw: sLog.pid.yaw.i, d_yaw: sLog.pid.yaw.d,
+    }
+    if (k in pidMap) return pidMap[k] ?? null
+    if (k === 'anti_gravity_gain') return sLog.other['antigravity_gain'] ?? null
+    if (k in sLog.filters) return sLog.filters[k] ?? null
+    if (k in sLog.other) return sLog.other[k] ?? null
+    return null
+  }
   const cli: string[] = [
-    '# PID Lab — ' + input.frameClass + ' mm, AUW ' + input.auw.toFixed(1) + ' g',
-    `set p_roll = ${pid.roll.p}`,
-    `set i_roll = ${pid.roll.i}`,
-    `set d_roll = ${pid.roll.d}`,
-    `set p_pitch = ${pid.pitch.p}`,
-    `set i_pitch = ${pid.pitch.i}`,
-    `set d_pitch = ${pid.pitch.d}`,
-    `set p_yaw = ${pid.yaw.p}`,
-    `set i_yaw = ${pid.yaw.i}`,
-    `set d_yaw = ${pid.yaw.d}`,
+    '# PID Lab — ' + input.frameClass + ' mm, AUW ' + input.auw.toFixed(1) + ' g' +
+      (sLog ? ' · только отличия от настроек в логе' : ''),
   ]
-  for (const k of Object.keys(filters)) cli.push(`set ${k} = ${filters[k]}`)
-  for (const k of Object.keys(other)) cli.push(`set ${k} = ${other[k]}`)
+  // тип фильтра не имеет значения, когда он выключен (частота 0) — такие строки не эмитим
+  const typePair: { [key: string]: string } = {
+    gyro_lpf2_type: 'gyro_lpf2_static_hz',
+    dterm_lpf2_type: 'dterm_lpf2_static_hz',
+    dterm_lpf1_type: 'dterm_lpf1_dyn_max_hz',
+  }
+  const pushSet = (k: string, v: number | string) => {
+    const pair = typePair[k]
+    if (pair && !(filters[pair] > 0)) return
+    const lv = logVal(k)
+    if (lv === null || Number(v) !== lv) cli.push(`set ${k} = ${v}`)
+  }
+  pushSet('p_roll', pid.roll.p)
+  pushSet('i_roll', pid.roll.i)
+  pushSet('d_roll', pid.roll.d)
+  pushSet('p_pitch', pid.pitch.p)
+  pushSet('i_pitch', pid.pitch.i)
+  pushSet('d_pitch', pid.pitch.d)
+  pushSet('p_yaw', pid.yaw.p)
+  pushSet('i_yaw', pid.yaw.i)
+  pushSet('d_yaw', pid.yaw.d)
+  for (const k of Object.keys(filters)) pushSet(k, filters[k])
+  for (const k of Object.keys(other)) pushSet(k, other[k])
   cli.push('save')
 
   return {

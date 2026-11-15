@@ -29,3 +29,5 @@ const tune = computeTune({
 console.log('Задержка: рекомендация ' + tune.delay.totalMs + ' мс · из лога ' + tune.delay.logTotalMs + ' мс · база ' + tune.delay.baseTotalMs + ' мс')
 console.log('Объяснения (from → to):')
 for (const e of tune.explanations) console.log('  ' + e.setting + ': ' + e.from + ' → ' + e.to)
+console.log('CLI diff:')
+console.log(tune.cli.join('\n'))
