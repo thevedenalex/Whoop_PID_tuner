@@ -88,7 +88,7 @@ export default function LogSection(props: {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4 items-start">
           <div className="space-y-3">
             <div
               role="button"
