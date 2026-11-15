@@ -151,8 +151,8 @@ export default function BuildPanel(props: {
     if (catId === 'prop') {
       const re31 = /31мм|31MM/i
       const re40 = /40мм|40MM/i
-      const g31 = items.filter((x) => re31.test(x.name)).sort((a, b) => (a.blades ?? 0) - (b.blades ?? 0) || byName(a, b))
-      const g40 = items.filter((x) => re40.test(x.name)).sort((a, b) => (a.blades ?? 0) - (b.blades ?? 0) || byName(a, b))
+      const g31 = items.filter((x) => re31.test(x.name)).sort(byName)
+      const g40 = items.filter((x) => re40.test(x.name)).sort(byName)
       if (g31.length) groups.push({ label: 'Пропы 31 мм', items: g31 })
       if (g40.length) groups.push({ label: 'Пропы 40 мм', items: g40 })
       const rest = items.filter((x) => !re31.test(x.name) && !re40.test(x.name)).sort(byName)
