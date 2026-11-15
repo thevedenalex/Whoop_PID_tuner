@@ -174,24 +174,43 @@ function logPathDelayMs(s: LogSettings): { gyro: number; dterm: number } {
 }
 
 export function computeTune(input: TuneInput): TuneResult {
-  const base = (input.frameClass === '75' ? BASE_75 : BASE_65).pid
-  const filters = { ...(input.frameClass === '75' ? BASE_75 : BASE_65).filters }
-  const other = { ...(input.frameClass === '75' ? BASE_75 : BASE_65).other }
+  const baseTune = input.frameClass === '75' ? BASE_75 : BASE_65
+  const base = baseTune.pid
+  // Стартовая точка: при загруженном логе — фактические настройки из его заголовков
+  // (меняем только то, что реально улучшит поведение), иначе гоночная база класса.
+  const sLog = input.logSettings && input.logSettings.hasPid ? input.logSettings : null
+  const fLog = sLog ? sLog.filters : null
+
+  const filters: { [key: string]: number } = fLog
+    ? {
+        gyro_lpf1_static_hz: 0, // lpf1 всегда рекомендуем выключенным
+        gyro_lpf2_static_hz: fLog['gyro_lpf2_static_hz'] ?? 0,
+        gyro_lpf2_type: fLog['gyro_lpf2_type'] || 1,
+        dyn_notch_count: fLog['dyn_notch_count'] ?? 3,
+        dyn_notch_q: fLog['dyn_notch_q'] || 450,
+        dyn_notch_min_hz: fLog['dyn_notch_min_hz'] ?? 140,
+        dyn_notch_max_hz: fLog['dyn_notch_max_hz'] || 400,
+        dterm_lpf1_dyn_min_hz: fLog['dterm_lpf1_dyn_min_hz'] ?? 0,
+        dterm_lpf1_dyn_max_hz: fLog['dterm_lpf1_dyn_max_hz'] ?? 0,
+        dterm_lpf1_type: fLog['dterm_lpf1_type'] || 1,
+        dterm_lpf2_static_hz: fLog['dterm_lpf2_static_hz'] ?? 0,
+        dterm_lpf2_type: fLog['dterm_lpf2_type'] || 1,
+        yaw_lowpass_hz: fLog['yaw_lowpass_hz'] ?? 0,
+      }
+    : { ...baseTune.filters }
+  const other = { ...baseTune.other }
   const expl: Explanation[] = []
   const warn: string[] = []
 
-  const pid = {
-    roll: { ...base.roll },
-    pitch: { ...base.pitch },
-    yaw: { ...base.yaw },
-  }
+  const pid = sLog
+    ? { roll: { ...sLog.pid.roll }, pitch: { ...sLog.pid.pitch }, yaw: { ...sLog.pid.yaw } }
+    : { roll: { ...base.roll }, pitch: { ...base.pitch }, yaw: { ...base.yaw } }
 
   const addExpl = (setting: string, from: string, to: string, reason: string) => {
     if (from !== to) expl.push({ setting, from, to, reason })
   }
 
   // «Исходное» значение для объяснений: фактическое из лога, если оно прочитано, иначе база
-  const sLog = input.logSettings && input.logSettings.hasPid ? input.logSettings : null
   const cur = (ax: 'roll' | 'pitch' | 'yaw', letter: 'p' | 'i' | 'd'): string =>
     sLog ? String(sLog.pid[ax][letter]) : String(base[ax][letter])
   const fFrom = (k: string): string =>
@@ -202,26 +221,28 @@ export function computeTune(input: TuneInput): TuneResult {
   const delta = input.auw - ref
   if (Math.abs(delta) >= 4) {
     const steps = Math.trunc(delta / 5) // ±1 per 5g
-    const dir = steps > 0 ? 'тяжелее' : 'легче'
-    const dp = Math.max(-4, Math.min(4, steps * 2))
-    const di = Math.max(-15, Math.min(20, steps * 6))
-    const dd = Math.max(-4, Math.min(6, steps * 2))
-    pid.roll.p = clampPid(pid.roll.p + dp)
-    pid.pitch.p = clampPid(pid.pitch.p + dp)
-    pid.roll.i = clampPid(pid.roll.i + di)
-    pid.pitch.i = clampPid(pid.pitch.i + di)
-    pid.yaw.i = clampPid(pid.yaw.i + di)
-    pid.roll.d = clampPid(pid.roll.d + dd)
-    pid.pitch.d = clampPid(pid.pitch.d + dd)
-    addExpl(
-      'P/I/D',
-      'база ' + input.frameClass + ' мм',
-      `P ${dp >= 0 ? '+' : ''}${dp}, I ${di >= 0 ? '+' : ''}${di}, D ${dd >= 0 ? '+' : ''}${dd}`,
-      `Взлётный вес ${input.auw} г — на ${Math.abs(delta)} г ${dir} референса (${ref} г): ` +
-        (delta > 0
-          ? 'массе нужны больше авторитет и интегральная составляющая'
-          : 'лёгкой сборке хватает меньших усилий, снижаем нагрев')
-    )
+    if (steps !== 0) {
+      const dir = steps > 0 ? 'тяжелее' : 'легче'
+      const dp = Math.max(-4, Math.min(4, steps * 2))
+      const di = Math.max(-15, Math.min(20, steps * 6))
+      const dd = Math.max(-4, Math.min(6, steps * 2))
+      pid.roll.p = clampPid(pid.roll.p + dp)
+      pid.pitch.p = clampPid(pid.pitch.p + dp)
+      pid.roll.i = clampPid(pid.roll.i + di)
+      pid.pitch.i = clampPid(pid.pitch.i + di)
+      pid.yaw.i = clampPid(pid.yaw.i + di)
+      pid.roll.d = clampPid(pid.roll.d + dd)
+      pid.pitch.d = clampPid(pid.pitch.d + dd)
+      addExpl(
+        'P/I/D',
+        sLog ? 'PID из лога' : 'база ' + input.frameClass + ' мм',
+        `P ${dp >= 0 ? '+' : ''}${dp}, I ${di >= 0 ? '+' : ''}${di}, D ${dd >= 0 ? '+' : ''}${dd}`,
+        `Взлётный вес ${input.auw} г — на ${Math.abs(delta)} г ${dir} референса (${ref} г): ` +
+          (delta > 0
+            ? 'массе нужны больше авторитет и интегральная составляющая'
+            : 'лёгкой сборке хватает меньших усилий, снижаем нагрев')
+      )
+    }
     if (delta > 8) {
       warn.push(`Сборка сильно тяжелее референса для ${input.frameClass} мм — рассмотрите более ёмкий аккумулятор и KV моторов, иначе просадки на панч-аут`)
     }
@@ -229,6 +250,7 @@ export function computeTune(input: TuneInput): TuneResult {
 
   // ---------- component influences (beyond weight) ----------
   for (const rule of input.influences || []) {
+    const lpf2Was = filters.gyro_lpf2_static_hz
     if (rule.target === 'pAdj') {
       pid.roll.p = clampPid(pid.roll.p + rule.value)
       pid.pitch.p = clampPid(pid.pitch.p + rule.value)
@@ -236,14 +258,18 @@ export function computeTune(input: TuneInput): TuneResult {
       pid.roll.d = clampPid(pid.roll.d + rule.value)
       pid.pitch.d = clampPid(pid.pitch.d + rule.value)
     } else if (rule.target === 'lpf2Delta') {
-      filters.gyro_lpf2_static_hz = Math.max(150, Math.min(350, filters.gyro_lpf2_static_hz + rule.value))
+      // lpf2 = 0 (выкл из лога) не включаем обратно — применяем только к включённому фильтру
+      if (filters.gyro_lpf2_static_hz > 0)
+        filters.gyro_lpf2_static_hz = Math.max(150, Math.min(350, filters.gyro_lpf2_static_hz + rule.value))
     } else if (rule.target === 'lpf2Cap') {
-      filters.gyro_lpf2_static_hz = Math.min(filters.gyro_lpf2_static_hz, rule.value)
+      if (filters.gyro_lpf2_static_hz > 0)
+        filters.gyro_lpf2_static_hz = Math.min(filters.gyro_lpf2_static_hz, rule.value)
     } else if (rule.target === 'dynNotchMin') {
       filters.dyn_notch_count = Math.max(filters.dyn_notch_count, rule.value)
     }
-    if (rule.desc) {
-      addExpl('Компоненты', 'база', rule.desc, rule.reason)
+    const lpf2Skipped = rule.target === 'lpf2Delta' || rule.target === 'lpf2Cap'
+    if (rule.desc && !(lpf2Skipped && lpf2Was === 0)) {
+      addExpl('Компоненты', sLog ? 'значения из лога' : 'база', rule.desc, rule.reason)
     }
   }
 
@@ -321,14 +347,19 @@ export function computeTune(input: TuneInput): TuneResult {
       }
     }
 
-    // noise
+    // noise. При старте из лога корректируем только «в сторону улучшения»:
+    // шумно — ужесточаем лишь то, что у пилота слабее целевого; чисто — ослабляем
+    // до целевого уровня, но не включаем выключенный lpf2 обратно.
     if (m.noiseFullDps !== null && m.noiseHoverDps !== null) {
       const ratio = m.noiseRatio ?? 0
       if (m.noiseFullDps > 28 || ratio > 2.6) {
-        filters.gyro_lpf2_static_hz = Math.min(filters.gyro_lpf2_static_hz, 250)
-        filters.dyn_notch_count = 4
-        filters.dyn_notch_min_hz = Math.min(filters.dyn_notch_min_hz, 130)
-        filters.dterm_lpf1_dyn_max_hz = Math.min(filters.dterm_lpf1_dyn_max_hz, 100)
+        filters.gyro_lpf2_static_hz =
+          filters.gyro_lpf2_static_hz > 0 ? Math.min(filters.gyro_lpf2_static_hz, 250) : 250
+        filters.dyn_notch_count = Math.max(filters.dyn_notch_count, 4)
+        filters.dyn_notch_min_hz =
+          filters.dyn_notch_min_hz > 0 ? Math.min(filters.dyn_notch_min_hz, 130) : 130
+        filters.dterm_lpf1_dyn_max_hz =
+          filters.dterm_lpf1_dyn_max_hz > 0 ? Math.min(filters.dterm_lpf1_dyn_max_hz, 100) : 100
         pid.roll.d = clampPid(pid.roll.d - 2)
         pid.pitch.d = clampPid(pid.pitch.d - 2)
         addExpl(
@@ -341,28 +372,51 @@ export function computeTune(input: TuneInput): TuneResult {
           warn.push('Очень высокий шум на газе — проверьте балансировку пропов, подшипники моторов и трещины рамы')
         }
       } else if (ratio < 1.6 && m.noiseFullDps < 18) {
-        filters.gyro_lpf2_static_hz = Math.min(350, filters.gyro_lpf2_static_hz + 40)
-        filters.dyn_notch_min_hz = filters.dyn_notch_min_hz + 20
-        filters.dterm_lpf1_dyn_min_hz = filters.dterm_lpf1_dyn_min_hz + 15
-        addExpl(
-          'Фильтры',
-          fFrom('gyro_lpf2_static_hz'),
-          'gyro_lpf2 +' + (filters.gyro_lpf2_static_hz - 300) + ', dyn_notch min +' + 20,
-          'Шум низкий — ослабляем фильтры для минимальной задержки (гоночный профиль)'
-        )
+        const lpf2Before = filters.gyro_lpf2_static_hz
+        const notchMinBefore = filters.dyn_notch_min_hz
+        const dtermMinBefore = filters.dterm_lpf1_dyn_min_hz
+        // lpf2 выключен (0) — минимальная задержка уже достигнута, не включаем обратно
+        if (lpf2Before > 0)
+          filters.gyro_lpf2_static_hz = Math.max(lpf2Before, Math.min(350, baseTune.filters.gyro_lpf2_static_hz + 40))
+        filters.dyn_notch_min_hz = Math.max(notchMinBefore, baseTune.filters.dyn_notch_min_hz + 20)
+        filters.dterm_lpf1_dyn_min_hz = Math.max(dtermMinBefore, baseTune.filters.dterm_lpf1_dyn_min_hz + 15)
+        if (
+          filters.gyro_lpf2_static_hz !== lpf2Before ||
+          filters.dyn_notch_min_hz !== notchMinBefore ||
+          filters.dterm_lpf1_dyn_min_hz !== dtermMinBefore
+        ) {
+          const lpf2Txt =
+            lpf2Before === 0 ? 'lpf2 выкл (оставляем)' : 'gyro_lpf2 ' + filters.gyro_lpf2_static_hz
+          addExpl(
+            'Фильтры',
+            fFrom('gyro_lpf2_static_hz'),
+            lpf2Txt + ', dyn_notch min ' + filters.dyn_notch_min_hz + ', dterm dyn min ' + filters.dterm_lpf1_dyn_min_hz,
+            'Шум низкий — ослабляем фильтры для минимальной задержки (гоночный профиль)'
+          )
+        }
       }
     }
 
     // motor saturation
     if (m.motorSatPct !== null && m.motorSatPct > 3) {
-      other.tpa = 0.55
-      other.tpa_breakpoint = 1650
-      addExpl(
-        'TPA',
-        'off',
-        '0.55 @ 1650',
-        `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени — TPA сгладит пик и уберёт «натяжку» на высоком газе`
-      )
+      // в логе TPA уже задан — не трогаем выбор пилота, предупреждаем; иначе включаем 0.55
+      const logTpaRate = sLog ? sLog.other['tpa_rate'] ?? 0 : 0
+      if (logTpaRate > 0) {
+        other.tpa = logTpaRate / 100
+        other.tpa_breakpoint = sLog ? sLog.other['tpa_breakpoint'] ?? 1650 : 1650
+        warn.push(
+          `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени при TPA ${(logTpaRate / 100).toFixed(2)}@${other.tpa_breakpoint} — упор в потолок тяги: лучше снизить вес или поднять KV, чем добавлять TPA`
+        )
+      } else {
+        other.tpa = 0.55
+        other.tpa_breakpoint = 1650
+        addExpl(
+          'TPA',
+          'off',
+          '0.55 @ 1650',
+          `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени — TPA сгладит пик и уберёт «натяжку» на высоком газе`
+        )
+      }
     }
 
     // latency
@@ -408,14 +462,16 @@ export function computeTune(input: TuneInput): TuneResult {
     pid.yaw.p = clampPid(pid.yaw.p - 2)
     pid.roll.d = clampPid(pid.roll.d - 2)
     pid.pitch.d = clampPid(pid.pitch.d - 2)
-    filters.gyro_lpf2_static_hz = Math.max(150, filters.gyro_lpf2_static_hz - 30)
+    // выключенный lpf2 (0) не включаем обратно — минимальная задержка важнее мягкости
+    if (filters.gyro_lpf2_static_hz > 0)
+      filters.gyro_lpf2_static_hz = Math.max(150, filters.gyro_lpf2_static_hz - 30)
     other.feedforward_gain = 35
     other.feedforward_boost = 0
     other.iterm_relax_cutoff = 8
     other.antigravity_gain = (other.antigravity_gain as number) - 15
     addExpl(
       'Профиль «Мягкий»',
-      'гоночная база',
+      sLog ? 'значения из лога' : 'гоночная база',
       'P −3, D −2, фильтры ↑, FF gain 35',
       'Плавный отклик без рывков — для спокойного indoor-полёта и отработки траекторий'
     )
@@ -427,7 +483,8 @@ export function computeTune(input: TuneInput): TuneResult {
     if (noiseOk) {
       pid.roll.d = clampPid(pid.roll.d + 3)
       pid.pitch.d = clampPid(pid.pitch.d + 3)
-      filters.gyro_lpf2_static_hz = Math.min(350, filters.gyro_lpf2_static_hz + 30)
+      if (filters.gyro_lpf2_static_hz > 0)
+        filters.gyro_lpf2_static_hz = Math.min(350, filters.gyro_lpf2_static_hz + 30)
       // чистый лог — главный источник задержки (динамические нотчи) можно сократить
       if (filters.dyn_notch_count > 2) filters.dyn_notch_count = 2
     } else {
@@ -439,7 +496,7 @@ export function computeTune(input: TuneInput): TuneResult {
     other.antigravity_gain = (other.antigravity_gain as number) + 10
     const sharpBits = ['P +3/+3/+4 yaw', 'FF gain 80, boost 10']
     if (noiseOk) sharpBits.push('D +3', 'фильтры ↓ (notch ×' + filters.dyn_notch_count + ')')
-    addExpl('Профиль «Максимум»', 'гоночная база', sharpBits.join(', '), 'Минимальная задержка и жёсткие стопы — максимум резкости на стиках')
+    addExpl('Профиль «Максимум»', sLog ? 'значения из лога' : 'гоночная база', sharpBits.join(', '), 'Минимальная задержка и жёсткие стопы — максимум резкости на стиках')
   }
 
   // ---------- оценка задержки фильтров ----------
