@@ -1,6 +1,6 @@
 # TinyWhoop PID Lab
 
-**Онлайн: https://thevedenalex.github.io/Whoop_PID_tuner/** — работает прямо в браузере,
+**Онлайн: https://pidtune.veden.pro/** — работает прямо в браузере,
 ничего не отправляет на сервер.
 
 Веб-приложение-анализатор blackbox-логов (.bbl) и тюнер PID для гоночных тинивупов 65–75 мм
