@@ -117,10 +117,20 @@ export default function BuildPanel(props: {
   const delta = build.auw - ref
 
   // группировка позиций: рамы — по размеру, моторы — по типоразмеру,
-  // пропы — по размеру (внутри — по числу лопастей), остальные — по питанию.
-  // Везде сортировка по производителю (по имени).
+  // пропы — по размеру, остальные — по питанию.
+  // Внутри группы — сортировка по производителю (алфавит), безымянные (generic) — в конец.
+  const BRAND_RE = /^(BetaFPV|Happymodel|NBD|RCinPower|VCI|Gemfan|HQProp|RunCam|Caddx|Foxeer|HDZero|ELRS|TBS)\b/
+  const brandOf = (x: Component) => x.name.match(BRAND_RE)?.[1] ?? null
+  const byName = (a: Component, b: Component) => {
+    const ba = brandOf(a)
+    const bb = brandOf(b)
+    if (ba && bb && ba !== bb) return ba.localeCompare(bb, undefined, { numeric: true })
+    if (ba && !bb) return -1
+    if (!ba && bb) return 1
+    const cellsRank = (c?: string) => (c === '1S' ? 0 : c === '2S' ? 1 : 2)
+    return cellsRank(a.cells) - cellsRank(b.cells) || a.name.localeCompare(b.name, undefined, { numeric: true })
+  }
   const groupsFor = (catId: Category, items: Component[]) => {
-    const byName = (a: Component, b: Component) => a.name.localeCompare(b.name)
     const groups: { label: string; items: Component[] }[] = []
     if (catId === 'frame') {
       for (const cls of ['65', '75'] as FrameClass[]) {
