@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 30% 4%;
+    --foreground: 195 20% 92%;
+    --card: 210 28% 7%;
+    --card-foreground: 195 20% 92%;
+    --popover: 210 28% 7%;
+    --popover-foreground: 195 20% 92%;
+    --primary: 187 92% 45%;
+    --primary-foreground: 210 40% 6%;
+    --secondary: 210 20% 12%;
+    --secondary-foreground: 195 20% 88%;
+    --muted: 210 18% 13%;
+    --muted-foreground: 200 10% 62%;
+    --accent: 187 60% 16%;
+    --accent-foreground: 187 90% 70%;
+    --destructive: 4 72% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 18% 16%;
+    --input: 210 18% 18%;
+    --ring: 187 92% 45%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'tnum';
+  }
+  .font-display {
+    font-family: Bahnschrift, 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .font-mono-data {
+    font-family: 'Cascadia Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  }
+}
+
+/* thin scrollbars for panels */
+.scroll-slim::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: hsl(210 18% 20%);
+  border-radius: 4px;
+}
