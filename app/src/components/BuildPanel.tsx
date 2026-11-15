@@ -76,18 +76,18 @@ export function computeBuild(selection: { [cat: string]: string }, extraWeight: 
     }
     if (cat.id === 'fc' && comp.gyro === 'mpu6000') {
       influences.push({
-        target: 'lpf2Delta',
-        value: 20,
-        desc: 'gyro_lpf2 +20',
-        reason: comp.name + ': MPU6000 — самый «тихий» гироскоп, ослабляем gyro LPF ради минимальной задержки',
+        target: 'lpf2Cap',
+        value: 250,
+        desc: 'gyro_lpf2 ≤250',
+        reason: comp.name + ': MPU6000 чувствителен к шуму моторов — чуть сильнее фильтрация гироскопа',
       })
     }
     if (cat.id === 'fc' && comp.gyro === 'icm42688') {
       influences.push({
-        target: 'lpf2Cap',
-        value: 280,
-        desc: 'gyro_lpf2 ≤280',
-        reason: comp.name + ': ICM-42688-P шумноват на низких частотах — ограничиваем gyro LPF',
+        target: 'lpf2Delta',
+        value: 20,
+        desc: 'gyro_lpf2 +20',
+        reason: comp.name + ': ICM-42688-P — самый чистый сигнал, ослабляем gyro LPF ради минимальной задержки',
       })
     }
     if (cat.id === 'fc' && comp.gyro === 'bmi270') {
@@ -95,7 +95,7 @@ export function computeBuild(selection: { [cat: string]: string }, extraWeight: 
         target: 'lpf2Cap',
         value: 290,
         desc: 'gyro_lpf2 ≤290',
-        reason: comp.name + ': BMI270 требует чуть большей фильтрации гироскопа',
+        reason: comp.name + ': BMI270 шумноват на низких частотах — ограничиваем gyro LPF',
       })
     }
   }

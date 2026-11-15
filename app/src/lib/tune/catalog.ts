@@ -125,13 +125,14 @@ export const CATEGORIES: CategoryDef[] = [
     required: true,
     items: [
       // 1S
-      { id: 'fc_matrix3in1', name: 'BetaFPV Matrix 3-in-1 (F4 1S AIO)', weight: 4.4, cells: '1S' },
+      { id: 'fc_matrix3in1', name: 'BetaFPV Matrix 3-in-1 (F4 1S AIO, ICM42688)', weight: 4.4, cells: '1S', gyro: 'icm42688' },
+      { id: 'fc_matrix3in1_bmi', name: 'BetaFPV Matrix 3-in-1 (F4 1S AIO, BMI270)', weight: 4.4, cells: '1S', gyro: 'bmi270', note: 'с янв. 2026' },
       { id: 'fc_f4_5a', name: 'F4 1S AIO 5A (ELRS встроен)', weight: 3.4, cells: '1S' },
       { id: 'fc_f411_5a', name: 'F411 1S AIO 5A', weight: 3.6, cells: '1S' },
       { id: 'fc_g473_5a', name: 'G473 1S AIO 5A (ELRS встроен)', weight: 3.3, cells: '1S' },
       { id: 'fc_hm_diamond', name: 'Happymodel Diamond F4 1S AIO ELRS', weight: 3.3, cells: '1S' },
       { id: 'fc_hm_x12', name: 'Happymodel X12 1S AIO ELRS (5A)', weight: 3.4, cells: '1S' },
-      { id: 'fc_nbd_beebrain', name: 'NBD BeeBrain BLV5 ELRS AIO', weight: 4.9, cells: '1S', note: 'флагманская' },
+      { id: 'fc_nbd_beebrain', name: 'NBD BeeBrain BLV5 ELRS AIO', weight: 4.9, cells: '1S', gyro: 'mpu6000', note: 'флагманская' },
       { id: 'fc_nbd_hummingbird', name: 'NBD Hummingbird V4 ELRS AIO (12A Bluejay)', weight: 4.6, cells: '1S', gyro: 'bmi270' },
       // 2S
       { id: 'fc_f405_12a', name: 'F405 2S AIO 12A', weight: 5.6, cells: '2S', note: 'для тяжёлых 75мм 2S' },
