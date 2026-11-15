@@ -139,7 +139,7 @@ export default function ResultsPanel(props: {
             </Table>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-2 text-xs">
               {Object.entries(tune.filters).map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-3 border-b border-border/50 py-1">
+                <div key={k} className="flex justify-between gap-3 border-b border-border/50 py-1 [&:nth-child(2n)]:border-l [&:nth-child(2n)]:pl-3 md:[&:nth-child(3n+1)]:border-l-0 md:[&:nth-child(3n+1)]:pl-0 md:[&:nth-child(3n+2)]:border-l md:[&:nth-child(3n+2)]:pl-3 md:[&:nth-child(3n)]:border-l md:[&:nth-child(3n)]:pl-3">
                   <span className="text-muted-foreground font-mono-data truncate">{k}</span>
                   <span className="font-mono-data shrink-0">{v}</span>
                 </div>
