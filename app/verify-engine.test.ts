@@ -52,6 +52,24 @@ describe('вес и класс рамы', () => {
     expect(brace.auw - plain.auw).toBeCloseTo(0.7, 5)
     expect(plain.frameClass).toBe('75')
   })
+  it('карбоновый усилитель: жёсткость рамы → D +1, gyro_lpf2 +10', () => {
+    const b = computeBuild({ ...DEFAULT_SELECTION, frame: 'f75_cockroach75_cb' }, 0)
+    expect(b.influences.some((r) => r.target === 'dAdj' && r.value === 1)).toBe(true)
+    const lpf = b.influences.filter((r) => r.target === 'lpf2Delta').reduce((s, r) => s + r.value, 0)
+    expect(lpf).toBe(10)
+    // при эталонном весе коррекция по весу не мешает: база 75 → D 38+1=39, lpf2 280+10=290
+    const res = computeTune({
+      frameClass: b.frameClass, auw: 34, motorKv: b.motorKv,
+      rates: { roll: 720, pitch: 720, yaw: 640 }, expo: 0.2,
+      metrics: null, hasLog: false, influences: b.influences,
+    })
+    expect(res.pid.roll.d).toBe(39)
+    expect(res.filters.gyro_lpf2_static_hz).toBe(290)
+  })
+  it('обычная рама — без влияния жёсткости', () => {
+    const b = computeBuild({ ...DEFAULT_SELECTION, frame: 'f75_cockroach75' }, 0)
+    expect(b.influences.filter((r) => r.target === 'dAdj' || r.target === 'lpf2Delta')).toHaveLength(0)
+  })
   it('75 мм — база 75 класса (с учётом коррекции на лёгкий вес)', () => {
     const { res } = tune({ frame: 'f75_cockroach75' })
     expect(res.frameClass).toBe('75')

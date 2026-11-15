@@ -74,6 +74,15 @@ export function computeBuild(selection: { [cat: string]: string }, extraWeight: 
       })
       influences.push({ target: 'lpf2Delta', value: 10, desc: '', reason: '' })
     }
+    if (cat.id === 'frame' && comp.stiff) {
+      influences.push({
+        target: 'dAdj',
+        value: 1,
+        desc: 'D +1, фильтры ↓',
+        reason: comp.name + ': карбоновый усилитель — рама жёстче, меньше пропвоша и резонансов: можно больше D и чуть слабее фильтры',
+      })
+      influences.push({ target: 'lpf2Delta', value: 10, desc: '', reason: '' })
+    }
     if (cat.id === 'fc' && comp.gyro === 'mpu6000') {
       influences.push({
         target: 'lpf2Cap',

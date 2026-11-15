@@ -17,6 +17,7 @@ export interface Component {
   blades?: number // prop: число лопастей (влияет на нагрузку/шум)
   aggr?: 'light' | 'aggressive' // prop: лёгкие или агрессивный шаг
   bearing?: 'ball' // motor: шариковые подшипники — меньше механического шума
+  stiff?: boolean // frame: карбоновый усилитель — жёстче, меньше пропвоша/резонансов
   gyro?: 'mpu6000' | 'icm42688' | 'bmi270' // fc: тип гироскопа — влияет на фильтрацию
   note?: string
 }
@@ -54,9 +55,9 @@ export const CATEGORIES: CategoryDef[] = [
       { id: 'f75_meteor75', name: 'BetaFPV Meteor75 Pro', weight: 4.4, cls: '75' },
       { id: 'f75_mobula7', name: 'Happymodel Mobula7 (75мм)', weight: 4.6, cls: '75' },
       { id: 'f75_cockroach75', name: 'NBD Cockroach 75', weight: 3.9, cls: '75' },
-      { id: 'f75_cockroach75_cb', name: 'NBD Cockroach 75 + карбоновый усилитель', weight: 4.6, cls: '75', note: 'жёстче, для гонок' },
+      { id: 'f75_cockroach75_cb', name: 'NBD Cockroach 75 + карбоновый усилитель', weight: 4.6, cls: '75', stiff: true, note: 'жёстче, для гонок' },
       { id: 'f75_cockroach_liteaf', name: 'NBD Cockroach LiteAF 75', weight: 3.2, cls: '75', note: 'лёгкая версия' },
-      { id: 'f75_cockroach_liteaf_cb', name: 'NBD Cockroach LiteAF 75 + карбоновый усилитель', weight: 3.9, cls: '75', note: 'жёстче, для гонок' },
+      { id: 'f75_cockroach_liteaf_cb', name: 'NBD Cockroach LiteAF 75 + карбоновый усилитель', weight: 3.9, cls: '75', stiff: true, note: 'жёстче, для гонок' },
     ],
   },
   {
