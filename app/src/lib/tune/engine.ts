@@ -89,14 +89,13 @@ const BASE_65: BaseTune = {
     yaw_lowpass_hz: 0,
   },
   other: {
-    tpa: 0,
+    tpa_rate: 0, // процент среза PID на полном газу (BF CLI: 0-100)
     tpa_breakpoint: 1650,
     iterm_relax: 2, // setpoint
     iterm_relax_cutoff: 10,
-    antigravity_gain: 90,
+    anti_gravity_gain: 90,
     feedforward_transition: 0,
     feedforward_boost: 5,
-    feedforward_gain: 50,
     motor_output_limit: 100,
   },
 }
@@ -123,14 +122,13 @@ const BASE_75: BaseTune = {
     yaw_lowpass_hz: 0,
   },
   other: {
-    tpa: 0,
+    tpa_rate: 0,
     tpa_breakpoint: 1650,
     iterm_relax: 2,
     iterm_relax_cutoff: 10,
-    antigravity_gain: 95,
+    anti_gravity_gain: 95,
     feedforward_transition: 0,
     feedforward_boost: 5,
-    feedforward_gain: 50,
     motor_output_limit: 100,
   },
 }
@@ -399,21 +397,21 @@ export function computeTune(input: TuneInput): TuneResult {
 
     // motor saturation
     if (m.motorSatPct !== null && m.motorSatPct > 3) {
-      // в логе TPA уже задан — не трогаем выбор пилота, предупреждаем; иначе включаем 0.55
+      // в логе TPA уже задан — не трогаем выбор пилота, предупреждаем; иначе включаем 55%
       const logTpaRate = sLog ? sLog.other['tpa_rate'] ?? 0 : 0
       if (logTpaRate > 0) {
-        other.tpa = logTpaRate / 100
+        other.tpa_rate = logTpaRate // в логе и BF CLI проценты 0-100, конверсия не нужна
         other.tpa_breakpoint = sLog ? sLog.other['tpa_breakpoint'] ?? 1650 : 1650
         warn.push(
-          `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени при TPA ${(logTpaRate / 100).toFixed(2)}@${other.tpa_breakpoint} — упор в потолок тяги: лучше снизить вес или поднять KV, чем добавлять TPA`
+          `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени при TPA ${logTpaRate}%@${other.tpa_breakpoint} — упор в потолок тяги: лучше снизить вес или поднять KV, чем добавлять TPA`
         )
       } else {
-        other.tpa = 0.55
+        other.tpa_rate = 55
         other.tpa_breakpoint = 1650
         addExpl(
           'TPA',
           'off',
-          '0.55 @ 1650',
+          'tpa_rate 55% @ 1650',
           `Моторы в упор ${m.motorSatPct.toFixed(1)}% времени — TPA сгладит пик и уберёт «натяжку» на высоком газе`
         )
       }
@@ -465,14 +463,13 @@ export function computeTune(input: TuneInput): TuneResult {
     // выключенный lpf2 (0) не включаем обратно — минимальная задержка важнее мягкости
     if (filters.gyro_lpf2_static_hz > 0)
       filters.gyro_lpf2_static_hz = Math.max(150, filters.gyro_lpf2_static_hz - 30)
-    other.feedforward_gain = 35
     other.feedforward_boost = 0
     other.iterm_relax_cutoff = 8
-    other.antigravity_gain = (other.antigravity_gain as number) - 15
+    other.anti_gravity_gain = (other.anti_gravity_gain as number) - 15
     addExpl(
       'Профиль «Мягкий»',
       sLog ? 'значения из лога' : 'гоночная база',
-      'P −3, D −2, фильтры ↑, FF gain 35',
+      'P −3, D −2, фильтры ↑, FF boost 0',
       'Плавный отклик без рывков — для спокойного indoor-полёта и отработки траекторий'
     )
   } else if (prof === 'sharp') {
@@ -490,11 +487,10 @@ export function computeTune(input: TuneInput): TuneResult {
     } else {
       warn.push('Профиль «Максимум резкости»: в логе шум выше 18°/с — P и feedforward добавили, но D и фильтры не ослабляем, пока не уберёте источник шума (балансировка пропов, подшипники, рама)')
     }
-    other.feedforward_gain = 80
     other.feedforward_boost = 10
     other.iterm_relax_cutoff = 15
-    other.antigravity_gain = (other.antigravity_gain as number) + 10
-    const sharpBits = ['P +3/+3/+4 yaw', 'FF gain 80, boost 10']
+    other.anti_gravity_gain = (other.anti_gravity_gain as number) + 10
+    const sharpBits = ['P +3/+3/+4 yaw', 'FF boost 10']
     if (noiseOk) sharpBits.push('D +3', 'фильтры ↓ (notch ×' + filters.dyn_notch_count + ')')
     addExpl('Профиль «Максимум»', sLog ? 'значения из лога' : 'гоночная база', sharpBits.join(', '), 'Минимальная задержка и жёсткие стопы — максимум резкости на стиках')
   }

@@ -395,7 +395,7 @@ export default function ResultsPanel(props: {
                 )}
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Feedforward: gain {tune.other['feedforward_gain']} · boost {tune.other['feedforward_boost']} — опережает
+                Feedforward: boost {tune.other['feedforward_boost']} · transition {tune.other['feedforward_transition']} — опережает
                 стик и компенсирует часть задержки. Ощутимая «вялость» = задержка фильтров + отклик из лога; PT1 оценён
                 как 1/(2π·f), нотч — на центре диапазона.
               </p>

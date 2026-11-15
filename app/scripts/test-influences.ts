@@ -24,7 +24,7 @@ function show(name: string, sel: { [k: string]: string }, profile?: SharpnessPro
     ' D ' + tune.pid.roll.d + '/' + tune.pid.pitch.d +
     ' | gyro_lpf2 ' + tune.filters['gyro_lpf2_static_hz'] +
     ' dyn_notch ' + tune.filters['dyn_notch_count'] +
-    ' | ff_gain ' + tune.other['feedforward_gain'] + ' boost ' + tune.other['feedforward_boost'] +
+    ' | ff boost ' + tune.other['feedforward_boost'] + ' tpa ' + tune.other['tpa_rate'] +
     ' | delay ' + tune.delay.totalMs + ' мс (база ' + tune.delay.baseTotalMs + ', Δ ' + tune.delay.deltaMs + ')',
   )
   console.log('  warnings: ' + (tune.warnings.join(' | ') || 'нет'))
