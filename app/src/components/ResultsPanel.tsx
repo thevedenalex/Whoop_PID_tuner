@@ -352,11 +352,11 @@ export default function ResultsPanel(props: {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <StatCard
-                  title="Путь гироскопа"
+                  title="Задержка гироскопа"
                   value={tune.delay.gyroMs.toFixed(1) + ' мс'}
                   hint={'LPF2 ' + tune.delay.lpf2 + ' Гц + dyn notch ×' + tune.delay.notchCount}
                 />
-                <StatCard title="Путь D-term" value={tune.delay.dtermMs.toFixed(1) + ' мс'} hint="динамический + статический PT1" />
+                <StatCard title="Задержка D-term" value={tune.delay.dtermMs.toFixed(1) + ' мс'} hint="динамический + статический PT1" />
                 <StatCard
                   title="Итого фильтры"
                   value={tune.delay.totalMs.toFixed(1) + ' мс'}
